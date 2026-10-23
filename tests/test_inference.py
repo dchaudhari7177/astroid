@@ -2588,6 +2588,21 @@ class InferenceTest(resources.SysPathSetup, unittest.TestCase):
         self.assertIsInstance(second, nodes.Const)
         self.assertEqual(second.value, 42)
 
+    def test_inferring_contextmanager_keeps_every_value_of_the_yield(self) -> None:
+        node = extract_node("""
+        from contextlib import contextmanager
+
+        @contextmanager
+        def manager(stream):
+            yield 42 if stream.isatty() else "text"
+            yield None  # This should be ignored.
+
+        with manager(unknown) as value:
+            value  #@
+        """)
+        inferred = node.inferred()
+        self.assertEqual({value.value for value in inferred}, {42, "text"})
+
     def test_inferring_context_manager_skip_index_error(self) -> None:
         # Raise an InferenceError when having multiple 'as' bindings
         # from a context manager, but its result doesn't have those

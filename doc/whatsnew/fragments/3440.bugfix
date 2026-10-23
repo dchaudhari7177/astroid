@@ -1,0 +1,7 @@
+Inference of the value bound by ``with`` on a ``@contextmanager`` function now
+keeps every value inferred for its ``yield``, not only the first one. This
+removes ``no-member`` false positives in pylint when the yielded name has
+several possible values, for example ``sys.stderr`` after it is replaced with a
+``StringIO``.
+
+Closes #3440
